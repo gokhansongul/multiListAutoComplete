@@ -19,8 +19,8 @@
             eventType: 'keydown'
         };
 
-        $element.bind(eventType, function() {
-
+        $element.bind(config.eventType, function() {
+            debugger;
         });
 
     };
