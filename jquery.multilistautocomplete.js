@@ -5,12 +5,16 @@
      */
     $.fn.multiListAutoComplete = function(options){
         var $element = $(this);
+        var that = this;
+
+        if (!options || (options.proxy && typeof options.proxy != 'function')) {
+            throw 'Error!';
+        }
 
         /**
          * @type {Object}
          */
         var config = {
-            proxy: this.proxy,
             listCount: 1,
             delayTime: 500,
             minLength: 3,
@@ -19,9 +23,20 @@
             eventType: 'keydown'
         };
 
+        $.extend(config, options);
+
         $element.bind(config.eventType, function() {
-            debugger;
+            var value = $.trim(this.value);
+            if (value && value.length >= config.minLength) {
+                that.init();
+            }
         });
+
+        this.init = function() {
+            var data = config.proxy(this.value);
+
+            debugger;
+        };
 
     };
 })(jQuery);
