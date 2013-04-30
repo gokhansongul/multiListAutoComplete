@@ -26,16 +26,18 @@
         $.extend(config, options);
 
         $element.bind(config.eventType, function() {
-            var value = $.trim(this.value);
-            if (value && value.length >= config.minLength) {
-                that.init();
-            }
+            setTimeout(function() {
+                var value = $.trim($element.val());
+                if (value && value.length >= config.minLength) {
+                    that.init();
+                }
+            }, config.delayTime);
         });
 
         this.init = function() {
             var data = config.proxy(this.value);
 
-            debugger;
+
         };
 
     };
