@@ -1,0 +1,3 @@
+jQuery.fn.multiListAutoComplete = function(){
+
+};
