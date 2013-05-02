@@ -74,7 +74,6 @@
          *
          * @param {Object} item
          * @return {jQueryObject}
-         * @private
          */
         var renderItem = function(item) {
             var $li = $('<li></li>').addClass('autocomplete-search-item');
@@ -100,7 +99,6 @@
         /**
          *
          * @param {string} text
-         * @private
          */
         var setSelectedTextToInput = function(text) {
             $element.val(text).focus();
@@ -110,7 +108,6 @@
         /**
          *
          * @return {jQueryObject}
-         * @private
          */
         var createListDom = function() {
             return $('<ul></ul>')
@@ -120,19 +117,11 @@
         };
 
 
-        /**
-         *
-         * @private
-         */
         var clearSearchResult = function() {
             $appendTo.find('ul.autocomplete').remove();
         };
 
 
-        /**
-         *
-         * @private
-         */
         var openWrapper = function() {
             $appendTo.show(config.delayTime, config.onOpen);
 
@@ -178,7 +167,6 @@
         /**
          *
          * @param {jQueryObject}
-         * @private
          */
         var changeHoverItem = function($item) {
             var $currently = getHoverItem();
@@ -191,7 +179,6 @@
         /**
          *
          * @param {jQueryObject} $currently
-         * @private
          */
         var handleDownKey = function($currently) {
             if (!$appendTo.is(':visible')) {
@@ -216,7 +203,6 @@
         /**
          *
          * @param {jQueryObject} $currently
-         * @private
          */
         var handleUpKey = function($currently) {
             var $target = $currently.prev();
@@ -232,7 +218,6 @@
         /**
          *
          * @param {jQueryObject}
-         * @private
          */
         var handleRightKey = function($currently) {
             var $target = $currently.next();
@@ -247,7 +232,6 @@
         /**
          *
          * @param {jQueryObject}
-         * @private
          */
         var handleLeftKey = function($currently) {
             var $target = $currently.prev();
@@ -262,7 +246,6 @@
         /**
          *
          * @param {jQueryObject}
-         * @private
          */
         var handleEnterKey = function($currently) {
             var value = $currently.find('a').data('value');
