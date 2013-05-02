@@ -80,12 +80,11 @@
 
             var $a = $('<a></a>').appendTo($li);
 
-            $a.data('value', item[config.value]);
-            $a.data('label', item[config.label]);
-
-            $a.html(item[config.label]);
-
-            $a.bind('click', function() {
+            $a
+                .data('value', item[config.value])
+                .data('label', item[config.label])
+                .html(item[config.label])
+                .bind('click', function() {
                 setSelectedTextToInput(item[config.value]);
                 item.element = this;
 
@@ -324,7 +323,7 @@
             var value = $.trim(this.value);
             var keyCode = e.keyCode;
 
-            if (value && value.length >= config.minLength && value == 'merh') {
+            if (value && value.length >= config.minLength) {
 
                 if ((keyCode >= 37 && keyCode <= 40) || keyCode == 13) {
                     bindKeyboardEvents(e);
