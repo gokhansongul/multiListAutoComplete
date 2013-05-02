@@ -2,13 +2,29 @@
 <html>
 <head>
     <title>jQuery Multi-Line AutoComplete Plugin</title>
+
+    <meta charset="UTF-8" />
+
     <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
     <script type="text/javascript" src="../jquery.multilistautocomplete.js"></script>
+
+    <style type="text/css">
+        ul { width: 400px; float: left; margin-right: 10px; border: 1px solid blue; }
+        ul li a { width: 100%; display: block; float: left; }
+        ul li.state-hover { background: red; }
+    </style>
+
     <script type="text/javascript">
         $(function() {
             var $input = $('input');
             $input.multiListAutoComplete({
-               proxy: function(value) {
+                appendTo: '#searchContainer',
+                label: 'hli',
+                value: 'kwd',
+                minLength: 3,
+                visibleTime: 100000,
+                delayTime: 250,
+                proxy: function(value) {
                    return {
                        "list": {
                            "akc_fir": [
@@ -90,10 +106,7 @@
                                    "kwd": "sandalet erkek",
                                    "hli": "sandalet <strong>erkek</strong>"
                                }
-                           ],
-                           "ier": "0",
-                           "ser": "",
-                           "tct": "19"
+                           ]
                        }
                    }
                }
@@ -104,5 +117,6 @@
 </head>
 <body>
     <input type="text" value="" />
+    <div id="searchContainer"></div>
 </body>
 </html>
