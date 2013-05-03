@@ -1,3 +1,11 @@
+/*!
+ * jQuery Multi List Auto Complete Plugin v0.1
+ * Authors: Gokhan Songul <gkhn.songul@gmail.com>
+ *          Gokhan Turunc <gokhan.turunc@gmail.com>
+ *
+ * Date: 2013-5-2
+ */
+
 (function($) {
 
     'use strict';
