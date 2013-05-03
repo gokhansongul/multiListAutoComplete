@@ -56,35 +56,53 @@
         var visibleTimeOut = 0;
 
 
+        /**
+         *
+         * @type {string}
+         */
+        var autocomplete = 'ul.autocomplete';
+
+
         var dataParser = function() {
-            var data = config.proxy($element.val());
-            if (data && data['list']) {
-                clearSearchResult();
+            config.proxy($element.val(), function(response) {
 
-                for (var i in data['list']) {
-                    listCount++;
-                    var list = data['list'][i];
+                if (response && response['list']) {
+                    clearSearchResult();
 
-                    if (list && $.isArray(list)) {
-                        var $listDOM = createListDom();
+                    for (var i in response['list']) {
+                        listCount++;
+                        var list = response['list'][i];
 
-                        for (var x = 0; x < list.length; x++) {
-                            var listSearchItem = list[x];
-                            $listDOM.append(config.renderItem(listSearchItem));
+                        if (list && $.isArray(list)) {
+                            var $listDOM = createListDom();
+
+                            for (var x = 0; x < list.length; x++) {
+                                var listSearchItem = list[x];
+                                $listDOM.append(config.renderItem(listSearchItem, config));
+                            }
                         }
                     }
+
+                    if (listCount > 1) {
+                        $appendTo.addClass('multipleList');
+                    } else {
+                        $appendTo.removeClass('multipleList');
+                    }
+
+                    openWrapper();
                 }
-                openWrapper();
-            }
+
+            });
         };
 
 
         /**
          *
          * @param {Object} item
+         * @param {Object} config
          * @return {jQueryObject}
          */
-        var renderItem = function(item) {
+        var renderItem = function(item, config) {
             var $li = $('<li></li>').addClass('autocomplete-search-item');
 
             var $a = $('<a></a>').appendTo($li);
@@ -95,7 +113,7 @@
                 .html(item[config.label])
                 .bind('click', function() {
                     setSelectedTextToInput(item[config.value]);
-                    config.onSelect && config.onSelect($a);
+                    config.onSelect && config.onSelect.call(this, $a);
                 });
 
             return $li;
@@ -117,28 +135,32 @@
          */
         var createListDom = function() {
             return $('<ul></ul>')
-                    .addClass('autocomplete')
-                    .addClass('list-' + listCount)
-                    .appendTo(config.appendTo);
+                .addClass('autocomplete')
+                .addClass('list-' + listCount)
+                .appendTo(config.appendTo);
         };
 
 
         var clearSearchResult = function() {
-            $appendTo.find('ul.autocomplete').remove();
+            $appendTo.find(autocomplete).remove();
         };
 
 
         var openWrapper = function() {
-            $appendTo.show(config.delayTime, config.onOpen);
+            config.onOpen && config.onOpen(listCount);
+            $appendTo.fadeIn(config.delayTime);
 
-            visibleTimeOut = setTimeout(function() {
-                closeWrapper();
-            }, config.visibleTime);
+            if (config.visibleTime) {
+                visibleTimeOut = setTimeout(function() {
+                    closeWrapper();
+                }, config.visibleTime);
+            }
+
         };
 
 
         var closeWrapper = function() {
-            $appendTo.hide(config.delayTime, config.onClose);
+            $appendTo.fadeOut(config.delayTime, config.onClose);
         };
 
 
@@ -154,7 +176,7 @@
          * @return {jQueryObject}
          */
         var getHoverItem = function() {
-            var $li = $appendTo.find('ul.autocomplete').find('li');
+            var $li = $appendTo.find(autocomplete).find('li');
             var $hover = $li.filter('.state-hover');
 
             return $hover;
@@ -174,7 +196,7 @@
                 $item = getHoverItem();
             }
 
-            return $item.parents('ul.autocomplete');
+            return $item.parents(autocomplete);
         };
 
 
@@ -200,9 +222,9 @@
                 $list = getListOfHoverItem();
             }
 
-            var $target = $list.next();
+            var $target = $list.next(autocomplete);
             if (!$target.length) {
-                $target = $list.parent().find('ul.autocomplete').first();
+                $target = $list.parent().find(autocomplete).first();
             }
 
             return $target;
@@ -218,9 +240,9 @@
                 $list = getListOfHoverItem();
             }
 
-            var $target = $list.prev();
+            var $target = $list.prev(autocomplete);
             if (!$target.length) {
-                $target = $list.parent().find('ul.autocomplete').last();
+                $target = $list.parent().find(autocomplete).last();
             }
 
             return $target;
@@ -254,7 +276,7 @@
             }
 
             if (!$currently.length) {
-                var $firstItem = $appendTo.find('ul.autocomplete').find('li').first();
+                var $firstItem = $appendTo.find(autocomplete).find('li').first();
                 changeHoverItem($firstItem);
             } else {
                 var $target = $currently.next();
@@ -310,14 +332,25 @@
             var value = $currently.find('a').data('value');
             if (value) {
                 setSelectedTextToInput(value);
-                config.onSelect && config.onSelect($currently.find('a'));
+                config.onSelect && config.onSelect.call(this, $currently.find('a'));
                 closeWrapper();
             }
         };
 
 
+        /**
+         *
+         * @param {jQueryObject} $item
+         */
+        var onFocus = function($item) {
+            $element.val($item.data('value')).focus();
+        };
+
+
         var bindKeyboardEvents = function(e) {
-            clearTimeout(visibleTimeOut);
+            if (config.visibleTime) {
+                clearTimeout(visibleTimeOut);
+            }
 
             var keyCode = e.keyCode;
 
@@ -329,18 +362,24 @@
                 13: handleEnterKey
             };
 
-            if ((keyCode == 37 || keyCode == 39) && listCount == 1) {
-                return false;
-            }
+            /*
+             if ((keyCode == 37 || keyCode == 39) && listCount == 1) {
+             $element.focus();
+             return false;
+             }
+             */
 
             if (keyHandlers[keyCode]) {
                 $element.focus();
                 keyHandlers[keyCode](getHoverItem(), e);
-                config.onFocus && config.onFocus(getHoverItem());
+                config.onFocus && config.onFocus.call(this, getHoverItem().find('a'));
 
-                visibleTimeOut = setTimeout(function() {
-                    closeWrapper();
-                }, config.visibleTime);
+                if (config.visibleTime) {
+                    visibleTimeOut = setTimeout(function() {
+                        closeWrapper();
+                    }, config.visibleTime);
+                }
+
             }
         };
 
@@ -350,7 +389,7 @@
          */
         var config = {
             delayTime: 500,
-            visibleTime: 10000,
+            visibleTime: 0,
             minLength: 3,
             itemPerList: 10,
             eventType: 'keyup',
@@ -360,7 +399,7 @@
             proxy: null,
             renderItem: renderItem,
             onSelect: function() {},
-            onFocus: function() {},
+            onFocus: onFocus,
             onOpen: function() {},
             onClose: function() {}
         };
@@ -375,6 +414,8 @@
          */
         var initialize = function(e) {
             clearTimeouts();
+
+            this.setAttribute('autocomplete', 'off');
 
             var value = $.trim(this.value),
                 keyCode = e.keyCode,
@@ -396,9 +437,9 @@
                 }
 
                 var processId = setTimeout(function() {
-                                    dataParser();
-                                    listCount = 0;
-                                }, config.delayTime);
+                    dataParser();
+                    listCount = 0;
+                }, config.delayTime);
 
                 timeout.push(processId);
             } else {
