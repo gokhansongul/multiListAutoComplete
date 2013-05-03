@@ -19,11 +19,16 @@
             var $input = $('input');
             $input.multiListAutoComplete({
                 appendTo: '#searchContainer',
+                eventType: 'keydown',
                 label: 'hli',
                 value: 'kwd',
                 minLength: 3,
                 visibleTime: 100000,
                 delayTime: 250,
+                onFocus: function($item) {
+                    var $a = $item.find('a');
+                    $input.val($a.data('value'));
+                },
                 proxy: function(value) {
                    return {
                        "list": {

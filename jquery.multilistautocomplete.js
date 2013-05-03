@@ -12,6 +12,7 @@
             throw 'Error!';
         }
 
+
         /**
          *
          * @type {jQueryObject}
@@ -85,11 +86,11 @@
                 .data('label', item[config.label])
                 .html(item[config.label])
                 .bind('click', function() {
-                setSelectedTextToInput(item[config.value]);
-                item.element = this;
+                    setSelectedTextToInput(item[config.value]);
+                    item.element = this;
 
-                config.onSelect && config.onSelect(item);
-            });
+                    config.onSelect && config.onSelect(item);
+                });
 
             return $li;
         };
@@ -156,10 +157,18 @@
 
         /**
          *
+         * @param {jQueryObject=} $hoverItem
          * @return {jQueryObject}
          */
-        var getListOfHoverItem = function() {
-            return getHoverItem().parents('ul.autocomplete');
+        var getListOfHoverItem = function($hoverItem) {
+            var $item = null;
+            if ($hoverItem && $hoverItem.length) {
+                $item = $hoverItem;
+            } else {
+                $item = getHoverItem();
+            }
+
+            return $item.parents('ul.autocomplete');
         };
 
 
@@ -177,6 +186,60 @@
 
         /**
          *
+         * @param {jQueryObject} $list
+         * @return {jQueryObject}
+         */
+        var getNextList = function($list) {
+            if (!$list || !$list.length) {
+                $list = getListOfHoverItem();
+            }
+
+            var $target = $list.next();
+            if (!$target.length) {
+                $target = $list.parent().find('ul.autocomplete').first();
+            }
+
+            return $target;
+        };
+
+
+        /**
+         *
+         * @param {jQueryObject} $list
+         */
+        var getPreviousList = function($list) {
+            if (!$list || !$list.length) {
+                $list = getListOfHoverItem();
+            }
+
+            var $target = $list.prev();
+            if (!$target.length) {
+                $target = $list.parent().find('ul.autocomplete').last();
+            }
+
+            return $target;
+        };
+
+
+        /**
+         *
+         * @param {jQueryObject} $currentlyItem
+         * @param {jQueryObject} $targetList
+         */
+        var matchItems = function($currentlyItem, $targetList) {
+            var index = $currentlyItem.index();
+            var $targetItem = $targetList.find('li').eq(index);
+
+            if (!$targetItem || !$targetItem.length) {
+                $targetItem = $targetList.find('li').eq(0);
+            }
+
+            return $targetItem;
+        };
+
+
+        /**
+         *
          * @param {jQueryObject} $currently
          */
         var handleDownKey = function($currently) {
@@ -185,13 +248,12 @@
             }
 
             if (!$currently.length) {
-                var $firstItem = $appendTo.find('ul.autocomplete').find('li').eq(0);
+                var $firstItem = $appendTo.find('ul.autocomplete').find('li').first();
                 changeHoverItem($firstItem);
-
             } else {
                 var $target = $currently.next();
                 if (!$target.length) {
-                    $target = $currently.parent().find('li').first();
+                    $target = getNextList().find('li').first();
                 }
 
                 changeHoverItem($target);
@@ -207,7 +269,7 @@
             var $target = $currently.prev();
 
             if (!$target.length) {
-                $target = $currently.parent().find('li').last();
+                $target = getPreviousList().find('li').last();
             }
 
             changeHoverItem($target);
@@ -217,28 +279,20 @@
         /**
          *
          * @param {jQueryObject}
+         * @param {Object} e
          */
-        var handleRightKey = function($currently) {
-            var $target = $currently.next();
-            if (!$target.length) {
-                $target = $appendTo.find('ul.autocomplete').eq(0);
+        var handleLeftRightKey = function($currently, e) {
+            var $activeList = getListOfHoverItem($currently);
+            var $targetList = null;
+
+            if (e.keyCode == 39) {
+                $targetList = getNextList($activeList);
+            } else {
+                $targetList = getPreviousList($activeList);
             }
 
-            changeHoverItem($target.find('li').eq(0));
-        };
-
-
-        /**
-         *
-         * @param {jQueryObject}
-         */
-        var handleLeftKey = function($currently) {
-            var $target = $currently.prev();
-            if (!$target.length) {
-                $target = $appendTo.find('ul.autocomplete').last();
-            }
-
-            changeHoverItem($target.find('li').eq(0));
+            var $targetItem = matchItems($currently, $targetList);
+            changeHoverItem($targetItem);
         };
 
 
@@ -250,8 +304,8 @@
             var value = $currently.find('a').data('value');
             if (value) {
                 setSelectedTextToInput(value);
-                closeWrapper();
                 config.onSelect && config.onSelect($currently);
+                closeWrapper();
             }
         };
 
@@ -259,34 +313,28 @@
         var bindKeyboardEvents = function(e) {
             clearTimeout(visibleTimeOut);
 
-            var $currently = null;
             var keyCode = e.keyCode;
 
             var keyHandlers = {
                 38: handleUpKey,
                 40: handleDownKey,
-                39: handleRightKey,
-                37: handleLeftKey,
+                39: handleLeftRightKey,
+                37: handleLeftRightKey,
                 13: handleEnterKey
             };
 
-            if (keyCode == 38 ||  keyCode == 40 || keyCode == 13) {
-                $currently = getHoverItem();
-            } else if (keyCode == 37 || keyCode == 39) {
-                $currently = getListOfHoverItem();
-
-                if (listCount == 1) {
-                    return false;
-                }
+            if ((keyCode == 37 || keyCode == 39) && listCount == 1) {
+                return false;
             }
 
             if (keyHandlers[keyCode]) {
-                keyHandlers[keyCode]($currently);
+                $element.focus();
+                keyHandlers[keyCode](getHoverItem(), e);
+                config.onFocus && config.onFocus(getHoverItem());
 
                 visibleTimeOut = setTimeout(function() {
                     closeWrapper();
                 }, config.visibleTime);
-
             }
         };
 
@@ -305,9 +353,10 @@
             value: null,
             proxy: null,
             renderItem: renderItem,
-            onSelect: null,
-            onOpen: null,
-            onClose: null
+            onSelect: function() {},
+            onFocus: function() {},
+            onOpen: function() {},
+            onClose: function() {}
         };
 
         $.extend(config, options);
@@ -320,10 +369,20 @@
          */
         var initialize = function(e) {
             clearTimeouts();
-            var value = $.trim(this.value);
-            var keyCode = e.keyCode;
 
-            if (value && value.length >= config.minLength) {
+            var value = $.trim(this.value),
+                keyCode = e.keyCode,
+                minLength = config.minLength;
+
+            if (config.eventType.toLowerCase() == 'keydown') {
+                minLength -= 2;
+
+                if (e.keyCode == 8) {
+                    minLength = config.minLength + 1;
+                }
+            }
+
+            if (value && value.length >= (minLength)) {
 
                 if ((keyCode >= 37 && keyCode <= 40) || keyCode == 13) {
                     bindKeyboardEvents(e);
@@ -336,7 +395,6 @@
                                 }, config.delayTime);
 
                 timeout.push(processId);
-
             } else {
                 closeWrapper();
                 clearSearchResult();
