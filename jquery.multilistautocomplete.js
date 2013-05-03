@@ -87,9 +87,7 @@
                 .html(item[config.label])
                 .bind('click', function() {
                     setSelectedTextToInput(item[config.value]);
-                    item.element = this;
-
-                    config.onSelect && config.onSelect(item);
+                    config.onSelect && config.onSelect($a);
                 });
 
             return $li;
@@ -304,7 +302,7 @@
             var value = $currently.find('a').data('value');
             if (value) {
                 setSelectedTextToInput(value);
-                config.onSelect && config.onSelect($currently);
+                config.onSelect && config.onSelect($currently.find('a'));
                 closeWrapper();
             }
         };
