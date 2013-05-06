@@ -362,13 +362,6 @@
                 13: handleEnterKey
             };
 
-            /*
-             if ((keyCode == 37 || keyCode == 39) && listCount == 1) {
-             $element.focus();
-             return false;
-             }
-             */
-
             if (keyHandlers[keyCode]) {
                 $element.focus();
                 keyHandlers[keyCode](getHoverItem(), e);
@@ -419,17 +412,13 @@
 
             var value = $.trim(this.value),
                 keyCode = e.keyCode,
-                minLength = config.minLength;
+                valueLength = value && value.length;
 
-            if (config.eventType.toLowerCase() == 'keydown') {
-                minLength -= 2;
-
-                if (e.keyCode == 8) {
-                    minLength = config.minLength + 1;
-                }
+            if (config.eventType.toLowerCase().indexOf('keydown') != -1) {
+                e.keyCode != 8 ? valueLength++ : valueLength--;
             }
 
-            if (value && value.length >= (minLength)) {
+            if (valueLength >= (config.minLength)) {
 
                 if ((keyCode >= 37 && keyCode <= 40) || keyCode == 13) {
                     bindKeyboardEvents(e);
