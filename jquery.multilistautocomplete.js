@@ -358,8 +358,8 @@
                 38: handleUpKey,
                 40: handleDownKey,
                 39: handleLeftRightKey,
-                37: handleLeftRightKey,
-                13: handleEnterKey
+                37: handleLeftRightKey
+                //13: handleEnterKey
             };
 
             if (keyHandlers[keyCode]) {
@@ -394,7 +394,8 @@
             onSelect: function() {},
             onFocus: onFocus,
             onOpen: function() {},
-            onClose: function() {}
+            onClose: function() {},
+            onEnter: function() {}
         };
 
         $.extend(config, options);
@@ -418,9 +419,13 @@
                 e.keyCode != 8 ? valueLength++ : valueLength--;
             }
 
+            if (keyCode == 13) {
+                config.onEnter && config.onEnter(value, config);
+            }
+
             if (valueLength >= (config.minLength)) {
 
-                if ((keyCode >= 37 && keyCode <= 40) || keyCode == 13) {
+                if (keyCode >= 37 && keyCode <= 40) {
                     bindKeyboardEvents(e);
                     return false;
                 }
