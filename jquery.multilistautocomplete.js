@@ -310,6 +310,10 @@
          * @param {Object} e
          */
         var handleLeftRightKey = function($currently, e) {
+            if (!$currently || !$currently.length) {
+                return;
+            }
+
             var $activeList = getListOfHoverItem($currently);
             var $targetList = null;
 
@@ -343,7 +347,8 @@
          * @param {jQueryObject} $item
          */
         var onFocus = function($item) {
-            $element.val($item.data('value')).focus();
+            var value = $item.data('value');
+            value && $element.val($item.data('value')).focus();
         };
 
 
