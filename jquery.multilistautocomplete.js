@@ -22,42 +22,36 @@
 
 
         /**
-         *
          * @type {jQueryObject}
          */
         var $element = $(this);
 
 
         /**
-         *
          * @type {null|jQueryObject}
          */
         var $appendTo = null;
 
 
         /**
-         *
          * @type {Array.<number>}
          */
         var timeout = [];
 
 
         /**
-         *
          * @type {number}
          */
         var listCount = 0;
 
 
         /**
-         *
          * @type {Number}
          */
         var visibleTimeOut = 0;
 
 
         /**
-         *
          * @type {string}
          */
         var autocomplete = 'ul.autocomplete';
@@ -97,7 +91,6 @@
 
 
         /**
-         *
          * @param {Object} item
          * @param {Object} config
          * @return {jQueryObject}
@@ -121,7 +114,6 @@
 
 
         /**
-         *
          * @param {string} text
          */
         var setSelectedTextToInput = function(text) {
@@ -130,7 +122,6 @@
 
 
         /**
-         *
          * @return {jQueryObject}
          */
         var createListDom = function() {
@@ -172,7 +163,6 @@
 
 
         /**
-         *
          * @return {jQueryObject}
          */
         var getHoverItem = function() {
@@ -184,7 +174,6 @@
 
 
         /**
-         *
          * @param {jQueryObject=} $hoverItem
          * @return {jQueryObject}
          */
@@ -201,8 +190,7 @@
 
 
         /**
-         *
-         * @param {jQueryObject}
+         * @param {jQueryObject} $item
          */
         var changeHoverItem = function($item) {
             var $currently = getHoverItem();
@@ -213,7 +201,6 @@
 
 
         /**
-         *
          * @param {jQueryObject} $list
          * @return {jQueryObject}
          */
@@ -232,7 +219,6 @@
 
 
         /**
-         *
          * @param {jQueryObject} $list
          */
         var getPreviousList = function($list) {
@@ -250,7 +236,6 @@
 
 
         /**
-         *
          * @param {jQueryObject} $currentlyItem
          * @param {jQueryObject} $targetList
          */
@@ -267,7 +252,6 @@
 
 
         /**
-         *
          * @param {jQueryObject} $currently
          */
         var handleDownKey = function($currently) {
@@ -290,7 +274,6 @@
 
 
         /**
-         *
          * @param {jQueryObject} $currently
          */
         var handleUpKey = function($currently) {
@@ -305,12 +288,11 @@
 
 
         /**
-         *
-         * @param {jQueryObject}
+         * @param {jQueryObject} $currently
          * @param {Object} e
          */
         var handleLeftRightKey = function($currently, e) {
-            if (!$currently || !$currently.length) {
+            if ((!$currently || !$currently.length) || listCount < 2) {
                 return;
             }
 
@@ -325,12 +307,12 @@
 
             var $targetItem = matchItems($currently, $targetList);
             changeHoverItem($targetItem);
+
         };
 
 
         /**
-         *
-         * @param {jQueryObject}
+         * @param {jQueryObject} $currently
          */
         var handleEnterKey = function($currently) {
             var value = $currently.find('a').data('value');
@@ -343,18 +325,23 @@
 
 
         /**
-         *
          * @param {jQueryObject} $item
          */
         var onFocus = function($item) {
             var value = $item.data('value');
-            value && $element.val($item.data('value')).focus();
+            setTimeout(function() {
+                value && $element.val($item.data('value')).focus();
+            }, 100);
         };
 
 
         var bindKeyboardEvents = function(e) {
             if (config.visibleTime) {
                 clearTimeout(visibleTimeOut);
+            }
+
+            if (listCount) {
+                e.preventDefault();
             }
 
             var keyCode = e.keyCode;
@@ -413,6 +400,7 @@
          */
         var initialize = function(e) {
             clearTimeouts();
+            var cancel = false;
 
             this.setAttribute('autocomplete', 'off');
 
@@ -432,13 +420,15 @@
 
                 if (keyCode >= 37 && keyCode <= 40) {
                     bindKeyboardEvents(e);
-                    return false;
+                    cancel = true;
                 }
 
-                var processId = setTimeout(function() {
-                    dataParser();
-                    listCount = 0;
-                }, config.delayTime);
+                if (!cancel) {
+                    var processId = setTimeout(function() {
+                        dataParser();
+                        listCount = 0;
+                    }, config.delayTime);
+                }
 
                 timeout.push(processId);
             } else {
