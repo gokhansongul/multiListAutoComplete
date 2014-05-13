@@ -340,19 +340,19 @@
                 clearTimeout(visibleTimeOut);
             }
 
-            if (listCount) {
+            var keyHandlers = {
+                38: handleUpKey,
+                40: handleDownKey
+            };
+
+            if (listCount > 1) {
                 e.preventDefault();
+                keyHandlers['39'] = keyHandlers['37'] = handleLeftRightKey;
             }
 
             var keyCode = e.keyCode;
 
-            var keyHandlers = {
-                38: handleUpKey,
-                40: handleDownKey,
-                39: handleLeftRightKey,
-                37: handleLeftRightKey
-                //13: handleEnterKey
-            };
+
 
             if (keyHandlers[keyCode]) {
                 $element.focus();
